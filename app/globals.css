@@ -1,26 +1,154 @@
 @import "tailwindcss";
 
+/* ── Design tokens ───────────────────────────────────────── */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Backgrounds */
+  --bg:          #FAF9F6;
+  --bg-card:     #FFFFFF;
+  --bg-elevated: #F5F4F1;
+
+  /* Text */
+  --ink:         #334155;
+  --ink-muted:   #94A3B8;
+  --ink-faint:   #CBD5E1;
+
+  /* Borders */
+  --line:        rgba(51, 65, 85, 0.12);
+  --line-md:     rgba(51, 65, 85, 0.18);
+
+  /* Accent palette (muted, organic) */
+  --sage:        #6A9E7F;
+  --sage-light:  #EEF5F1;
+  --sage-border: rgba(106,158,127,0.3);
+
+  --terra:       #BC6C4F;
+  --terra-light: #FDF2EE;
+  --terra-border:rgba(188,108,79,0.28);
+
+  --amber:       #C49A2B;
+  --amber-light: #FDFBEE;
+  --amber-border:rgba(196,154,43,0.28);
+
+  --lavender:    #7C6FA0;
+  --lavender-light: #F5F3FB;
+  --lavender-border: rgba(124,111,160,0.28);
+
+  --sky:         #4A8FA8;
+  --sky-light:   #EFF7FA;
+  --sky-border:  rgba(74,143,168,0.28);
+
+  /* Shadows */
+  --shadow-card: 2px 3px 10px rgba(51,65,85,0.09), 0 1px 3px rgba(51,65,85,0.06);
+  --shadow-hover:4px 10px 24px rgba(51,65,85,0.15), 0 2px 6px rgba(51,65,85,0.08);
+
+  /* Fonts */
+  --font-en: var(--font-en);
+  --font-ja: var(--font-ja);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+/* ── Reset & Base ─────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html, body {
+  height: 100%;
+  background-color: var(--bg);
+  color: var(--ink);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  /* Dot grid pattern */
+  background-image: radial-gradient(circle, #CBD5E1 1px, transparent 1px);
+  background-size: 22px 22px;
+}
+
+body {
+  font-family: var(--font-en), var(--font-ja),
+    'Hiragino Kaku Gothic ProN', 'Yu Gothic UI', sans-serif;
+  font-size: 14px;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Sticky card base ─────────────────────────────────────── */
+.sticky {
+  background: var(--bg-card);
+  border-radius: 6px;
+  box-shadow: var(--shadow-card);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.sticky:hover {
+  box-shadow: var(--shadow-hover);
+}
+
+/* Tilt variants */
+.tilt-p1  { transform: rotate(1deg); }
+.tilt-p1:hover  { transform: rotate(1deg) translateY(-5px); }
+.tilt-n1  { transform: rotate(-1.2deg); }
+.tilt-n1:hover  { transform: rotate(-1.2deg) translateY(-5px); }
+.tilt-p15 { transform: rotate(1.5deg); }
+.tilt-p15:hover { transform: rotate(1.5deg) translateY(-5px); }
+.tilt-n08 { transform: rotate(-0.8deg); }
+.tilt-n08:hover { transform: rotate(-0.8deg) translateY(-5px); }
+.tilt-p06 { transform: rotate(0.6deg); }
+.tilt-p06:hover { transform: rotate(0.6deg) translateY(-5px); }
+.tilt-0   { transform: rotate(0deg); }
+.tilt-0:hover   { transform: translateY(-5px); }
+
+/* ── Buttons ──────────────────────────────────────────────── */
+.btn-main {
+  background: var(--ink);
+  color: #FAF9F6;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  border: none;
+  border-radius: 6px;
+  padding: 13px;
+  cursor: pointer;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.2s;
+  box-shadow: 2px 3px 10px rgba(51,65,85,0.2);
+}
+.btn-main:hover {
+  transform: translateY(-3px);
+  box-shadow: 4px 8px 20px rgba(51,65,85,0.22);
+  background: #1E293B;
+}
+
+.btn-sub {
+  background: transparent;
+  color: var(--ink-muted);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  border: 1.5px solid var(--line-md);
+  border-radius: 6px;
+  padding: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+.btn-sub:hover {
+  background: var(--bg-elevated);
+  color: var(--ink);
+  transform: translateY(-2px);
+  box-shadow: 2px 4px 12px rgba(51,65,85,0.1);
+}
+
+/* ── Section label ────────────────────────────────────────── */
+.sec-label {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  margin-bottom: 10px;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { display: none; }
+
+/* ── Animations ───────────────────────────────────────────── */
+@keyframes gradient-shift {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }

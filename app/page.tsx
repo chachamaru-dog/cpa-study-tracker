@@ -1,65 +1,183 @@
-import Image from "next/image";
+"use client";
+
+import { useState, useEffect, useRef } from "react";
+import { AppState } from "@/lib/types";
+import { loadState, saveState, updateTopicProgress, defaultState } from "@/lib/storage";
+import { getSubjects } from "@/lib/examData";
+import { generateInitialProgress } from "@/lib/initialData";
+import ExamSetup from "@/components/ExamSetup";
+import OnboardingQuiz from "@/components/OnboardingQuiz";
+import HomeScreen from "@/components/HomeScreen";
+import Dashboard from "@/components/Dashboard";
+import Heatmap from "@/components/Heatmap";
+import RecordInput from "@/components/RecordInput";
+import NaturalInput, { StudySession } from "@/components/NaturalInput";
+import { StudyRecord } from "@/lib/types";
+import MockExamInput from "@/components/MockExamInput";
+import SettingsScreen from "@/components/SettingsScreen";
+
+type Page =
+  | "setup" | "onboarding" | "onboarding_preview" | "onboarding_redo"
+  | "home" | "dashboard" | "heatmap" | "record" | "natural" | "mockexam" | "settings";
 
 export default function Home() {
-  return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
-  );
+  const [state, setState] = useState<AppState | null>(null);
+  const [page, setPage] = useState<Page>("setup");
+  const stateRef = useRef<AppState | null>(null);
+
+  useEffect(() => {
+    const loaded = loadState();
+    setState(loaded);
+    stateRef.current = loaded;
+    if (loaded.examConfig) setPage("home");
+  }, []);
+
+  const handleSave = (newState: AppState) => {
+    stateRef.current = newState;
+    setState(newState);
+    saveState(newState);
+  };
+
+  if (!state) return null;
+
+  // ─── 試験選択 ───
+  if (page === "setup" || !state.examConfig) {
+    return (
+      <ExamSetup
+        onSave={(config) => {
+          handleSave({ ...stateRef.current!, examConfig: config });
+          setPage("onboarding");
+        }}
+      />
+    );
+  }
+
+  const subjects = getSubjects(state.examConfig.type);
+
+  // ─── 初回オンボーディング ───
+  if (page === "onboarding") {
+    return (
+      <OnboardingQuiz
+        subjects={subjects}
+        onComplete={(answers) => {
+          handleSave({
+            ...stateRef.current!,
+            topicProgress: generateInitialProgress(subjects, answers),
+            studyRecords: [],
+          });
+          setPage("home");
+        }}
+      />
+    );
+  }
+
+  // ─── プレビューモード（データ保存なし） ───
+  if (page === "onboarding_preview") {
+    return (
+      <OnboardingQuiz
+        subjects={subjects}
+        previewMode
+        onComplete={() => setPage("settings")} // プレビューなので呼ばれないが念のため
+        onClose={() => setPage("settings")}
+      />
+    );
+  }
+
+  // ─── やり直し（上書き保存） ───
+  if (page === "onboarding_redo") {
+    return (
+      <OnboardingQuiz
+        subjects={subjects}
+        onComplete={(answers) => {
+          handleSave({
+            ...stateRef.current!,
+            topicProgress: generateInitialProgress(subjects, answers),
+          });
+          setPage("home");
+        }}
+        onClose={() => setPage("settings")}
+      />
+    );
+  }
+
+  // ─── 設定 ───
+  if (page === "settings") {
+    return (
+      <SettingsScreen
+        onBack={() => setPage("home")}
+        onPreviewOnboarding={() => setPage("onboarding_preview")}
+        onRedoOnboarding={() => setPage("onboarding_redo")}
+        onResetData={() => {
+          if (window.confirm("すべてのデータを削除して最初からやり直しますか？\nこの操作は取り消せません。")) {
+            handleSave({ ...defaultState });
+            setPage("setup");
+          }
+        }}
+      />
+    );
+  }
+
+  if (page === "heatmap") return <Heatmap state={state} onBack={() => setPage("home")} />;
+
+  if (page === "record") {
+    return (
+      <RecordInput
+        state={state}
+        onRecord={(topicId, result) => {
+          handleSave(updateTopicProgress(stateRef.current!, topicId, result));
+        }}
+        onBack={() => setPage("home")}
+      />
+    );
+  }
+
+  if (page === "natural") {
+    return (
+      <NaturalInput
+        state={state}
+        onApply={(session: StudySession) => {
+          const record: StudyRecord = {
+            id: `${Date.now()}_${Math.random().toString(36).slice(2)}`,
+            topicId: "",
+            subjectId: session.subjectId,
+            result: "neutral",
+            method: session.method,
+            hours: session.hours,
+            concentration: session.concentration,
+            date: new Date().toISOString(),
+            memo: "",
+          };
+          handleSave({
+            ...stateRef.current!,
+            studyRecords: [record, ...stateRef.current!.studyRecords],
+          });
+        }}
+        onBack={() => setPage("home")}
+      />
+    );
+  }
+
+  if (page === "mockexam") {
+    return (
+      <MockExamInput
+        state={state}
+        onSave={(newProgress) => {
+          handleSave({ ...stateRef.current!, topicProgress: newProgress });
+        }}
+        onBack={() => setPage("home")}
+      />
+    );
+  }
+
+  if (page === "dashboard") {
+    return (
+      <Dashboard
+        state={state}
+        onNavigate={(p) => setPage(p as Page)}
+        onBack={() => setPage("home")}
+      />
+    );
+  }
+
+  return <HomeScreen state={state} onNavigate={(p) => setPage(p as Page)} />;
 }
