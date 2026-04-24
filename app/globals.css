@@ -8,13 +8,13 @@
   --bg-elevated: #F5F4F1;
 
   /* Text */
-  --ink:         #334155;
-  --ink-muted:   #94A3B8;
-  --ink-faint:   #CBD5E1;
+  --ink:         #3D2410;
+  --ink-muted:   #8B6448;
+  --ink-faint:   #C4A882;
 
   /* Borders */
-  --line:        rgba(51, 65, 85, 0.12);
-  --line-md:     rgba(51, 65, 85, 0.18);
+  --line:        rgba(90, 55, 25, 0.12);
+  --line-md:     rgba(90, 55, 25, 0.18);
 
   /* Accent palette (muted, organic) */
   --sage:        #6A9E7F;

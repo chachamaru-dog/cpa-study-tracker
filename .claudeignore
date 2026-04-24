@@ -1,0 +1,28 @@
+# 依存関係（巨大なので除外）
+node_modules/
+
+# ビルド成果物
+.next/
+out/
+dist/
+
+# キャッシュ
+.cache/
+*.tsbuildinfo
+
+# ロックファイル（変更しない）
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# 静的アセット（バイナリ）
+public/*.png
+public/*.jpg
+public/*.jpeg
+public/*.gif
+public/*.svg
+public/*.ico
+public/*.webp
+
+# 型定義（自動生成）
+next-env.d.ts
