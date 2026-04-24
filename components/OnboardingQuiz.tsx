@@ -2,7 +2,11 @@
 
 import { useState } from "react";
 import { Subject } from "@/lib/types";
-import { OnboardingAnswers } from "@/lib/initialData";
+export interface OnboardingAnswers {
+  mockScores:     Record<string, number | null>;
+  selfAssessment: Record<string, number>;
+  weakTopicIds:   string[];
+}
 
 interface Props {
   subjects: Subject[];

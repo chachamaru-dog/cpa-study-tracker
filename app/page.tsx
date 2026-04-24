@@ -6,7 +6,6 @@ import { loadState, saveState, updateTopicProgress, touchTopicProgress, defaultS
 import { getSubjects } from "@/lib/examData";
 import { generateInitialProgress } from "@/lib/initialData";
 import ExamSetup from "@/components/ExamSetup";
-import OnboardingQuiz from "@/components/OnboardingQuiz";
 import HomeScreen from "@/components/HomeScreen";
 import Dashboard from "@/components/Dashboard";
 import Heatmap from "@/components/Heatmap";
@@ -17,8 +16,7 @@ import SettingsScreen from "@/components/SettingsScreen";
 import HistoryScreen from "@/components/HistoryScreen";
 
 type Page =
-  | "setup" | "onboarding" | "onboarding_preview" | "onboarding_redo"
-  | "home" | "dashboard" | "heatmap" | "natural" | "mockexam" | "settings" | "history";
+  | "setup" | "home" | "dashboard" | "heatmap" | "natural" | "mockexam" | "settings" | "history";
 
 export default function Home() {
   const [state, setState] = useState<AppState | null>(null);
@@ -75,57 +73,15 @@ export default function Home() {
     return (
       <ExamSetup
         onSave={(config) => {
-          handleSave({ ...stateRef.current!, examConfig: config });
-          setPage("onboarding");
-        }}
-      />
-    );
-  }
-
-  const subjects = getSubjects(state.examConfig.type);
-
-  // ─── 初回オンボーディング ───
-  if (page === "onboarding") {
-    return (
-      <OnboardingQuiz
-        subjects={subjects}
-        onComplete={(answers) => {
+          const subjects = getSubjects(config.type);
           handleSave({
             ...stateRef.current!,
-            topicProgress: generateInitialProgress(subjects, answers),
+            examConfig: config,
+            topicProgress: generateInitialProgress(subjects),
             studyRecords: [],
           });
           setPage("home");
         }}
-      />
-    );
-  }
-
-  // ─── プレビューモード（データ保存なし） ───
-  if (page === "onboarding_preview") {
-    return (
-      <OnboardingQuiz
-        subjects={subjects}
-        previewMode
-        onComplete={() => setPage("settings")} // プレビューなので呼ばれないが念のため
-        onClose={() => setPage("settings")}
-      />
-    );
-  }
-
-  // ─── やり直し（上書き保存） ───
-  if (page === "onboarding_redo") {
-    return (
-      <OnboardingQuiz
-        subjects={subjects}
-        onComplete={(answers) => {
-          handleSave({
-            ...stateRef.current!,
-            topicProgress: generateInitialProgress(subjects, answers),
-          });
-          setPage("home");
-        }}
-        onClose={() => setPage("settings")}
       />
     );
   }
@@ -136,8 +92,6 @@ export default function Home() {
       <SettingsScreen
         examConfig={state.examConfig!}
         onBack={() => setPage("home")}
-        onPreviewOnboarding={() => setPage("onboarding_preview")}
-        onRedoOnboarding={() => setPage("onboarding_redo")}
         onResetData={() => {
           if (window.confirm("すべてのデータを削除して最初からやり直しますか？\nこの操作は取り消せません。")) {
             handleSave({ ...defaultState });

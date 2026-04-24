@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ArrowLeft, CalendarDays, RefreshCw, Trash2, Eye } from "lucide-react";
+import { ArrowLeft, CalendarDays, Trash2 } from "lucide-react";
 import { ExamConfig, ExamType } from "@/lib/types";
 
 type Category = "cpa" | "boki";
@@ -21,8 +21,6 @@ const categoryOf = (type: ExamType): Category =>
 interface Props {
   examConfig: ExamConfig;
   onBack: () => void;
-  onPreviewOnboarding: () => void;
-  onRedoOnboarding: () => void;
   onResetData: () => void;
   onUpdateExamConfig: (config: ExamConfig) => void;
 }
@@ -68,7 +66,7 @@ const Row = ({ icon, label, sub, color, onClick, danger }: {
 );
 
 export default function SettingsScreen({
-  examConfig, onBack, onPreviewOnboarding, onRedoOnboarding, onResetData, onUpdateExamConfig,
+  examConfig, onBack, onResetData, onUpdateExamConfig,
 }: Props) {
   const [editingExam,  setEditingExam]  = useState(false);
   const [selectedType, setSelectedType] = useState<ExamType>(examConfig.type);
@@ -186,23 +184,6 @@ export default function SettingsScreen({
               </div>
             </div>
           )}
-        </div>
-
-        {/* 初期設定 */}
-        <div style={card}>
-          <SectionLabel>初期設定</SectionLabel>
-          <Row
-            icon={<Eye size={15} strokeWidth={1.5} />}
-            label="初期設定をプレビュー"
-            sub="新規ユーザーの画面を確認（データは変更されません）"
-            onClick={onPreviewOnboarding}
-          />
-          <Row
-            icon={<RefreshCw size={15} strokeWidth={1.5} />}
-            label="初期設定をやり直す"
-            sub="学習歴・点数を再入力して習熟度を上書きする"
-            onClick={onRedoOnboarding}
-          />
         </div>
 
         {/* データ管理 */}
